@@ -45,9 +45,14 @@ const findUserByName = (name) => {
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
+const generateId = () => {
+  return Math.floor(Math.random() * 1000000).toString();
+};
+
 const addUser = (user) => {
-  users["users_list"].push(user);
-  return user;
+  const newUser = { id: generateId(), ...user };
+  users["users_list"].push(newUser);
+  return newUser;
 };
 
 const deleteUserById = (id) => {
@@ -92,8 +97,8 @@ app.get("/users", (req, res) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send();
+  const newUser = addUser(userToAdd);
+  res.status(201).send(newUser);
 });
 
 app.get("/users/:id", (req, res) => {
@@ -108,17 +113,6 @@ app.get("/users/:id", (req, res) => {
 
 app.get("/", (req, res) => {
   res.send("Hello World! v2");
-});
-
-app.get("/users", (req, res) => {
-  const name = req.query.name;
-  if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
-  }
 });
 
 app.listen(port, () => {

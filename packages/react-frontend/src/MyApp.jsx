@@ -19,16 +19,58 @@ function MyApp() {
       });
   }, []);
 
-  function updateList(person) {
-    setCharacters([...characters, person]);
-  }
+function postUser(person) {
+  const promise = fetch("http://localhost:8000/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(person),
+  });
 
-  function removeOneCharacter(index) {
-    const updated = characters.filter((character, i) => {
-      return i !== index;
+  return promise;
+}
+
+function updateList(person) {
+  postUser(person)
+    .then((response) => {
+      if (response.status === 201) {
+        return response.json();
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    })
+    .then((newUser) => {
+      setCharacters([...characters, newUser]);
+    })
+    .catch((error) => {
+      console.log(error);
     });
-    setCharacters(updated);
-  }
+}
+
+function deleteUser(id) {
+  const promise = fetch(`http://localhost:8000/users/${id}`, {
+    method: "DELETE",
+  });
+  return promise;
+}
+
+function removeOneCharacter(index) {
+  const id = characters[index].id;
+  deleteUser(id)
+    .then((response) => {
+      if (response.status === 204) {
+        const updated = characters.filter((character, i) => {
+          return i !== index;
+        });
+        setCharacters(updated);
+      } else {
+        throw new Error(`Unexpected status code: ${response.status}`);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
 
   return (
     <div className="container">
